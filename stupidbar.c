@@ -30,10 +30,8 @@ static char *get_battery() {
 	return battery;
 }
 
-long get_seconds_left() {
-	time_t ts = time(NULL);
+long get_seconds_left(time_t ts, struct tm *now) {
 	struct tm *tm;
-	struct tm *now = localtime(&ts);
 
 	if (now->tm_wday == 3) {
 		int schedule[10][3] = {
@@ -61,6 +59,8 @@ long get_seconds_left() {
 
 				if (seconds_left > 0) {
 					break;
+				} else {
+					return -1;
 				}
 			}
 		}
@@ -91,6 +91,8 @@ long get_seconds_left() {
 
 				if (seconds_left > 0) {
 					break;
+				} else {
+					return -1;
 				}
 			}
 		}
@@ -100,15 +102,25 @@ long get_seconds_left() {
 }
 
 int main(void) {
-	long secondsleft = get_seconds_left();
+	time_t ts = time(NULL); // time_t for now
+	struct tm *now = localtime(&ts); // localtime tm struct based on ts
 
-	if (secondsleft == 1730) {
-		system("rofi -e '\n	class ends in 15s\n' > /dev/null");
+	if (1 <= now->tm_wday && now->tm_wday <= 5) { // if weekday and school is not over
+		long secondsleft = get_seconds_left(ts, now);
+
+		if (secondsleft != -1) {
+			if (secondsleft == 15) {
+				system("rofi -e '\n	class ends in 15s\n' > /dev/null");
+			}
+
+			int minute = secondsleft / 60;
+			int seconds = secondsleft % 60;
+
+			printf(" %d:%d  🔋 %s%%  %s \n", minute, seconds, get_battery(), get_time());
+		} else {
+			printf(" 🔋 %s%%  %s \n", get_battery(), get_time());
+		}
+	} else {
+		printf(" 🔋 %s%%  %s \n", get_battery(), get_time());
 	}
-
-	int hour = secondsleft / 3600;
-	int minute = secondsleft / 60;
-	int seconds = secondsleft % 60;
-
-	printf(" %d:%d:%d  🔋 %s%%  %s \n", hour, minute, seconds, get_battery(), get_time());
 }

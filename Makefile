@@ -3,7 +3,7 @@ PREFIX=$(HOME)/.local
 
 all: stupidbar
 
-stupidbar: stupidbar.c #config.h
+stupidbar: stupidbar.c
 	$(CC) stupidbar.c -o stupidbar $(CFLAGS)
 	strip stupidbar
 
